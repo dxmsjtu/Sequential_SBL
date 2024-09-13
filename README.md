@@ -6,9 +6,7 @@ A set of MATLAB codes for direction-of-arrival (DOA) estimation, beamforming.
 
 The codes provide:
 
--Beamforming using sparse Bayesian learning (SBL)
-
--Beamforming using sequential VALSE (Sequential SBL)
+-[example.m]
 
 # Citation
 
