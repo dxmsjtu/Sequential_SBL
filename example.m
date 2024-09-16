@@ -1,11 +1,16 @@
-% Y. Park, F. Meyer, and P. Gerstoft
-% "Sequential sparse Bayesian learning for time-varying direction of arrival."
-% J. Acoust. Soc. Am. 149, 2089–2099 (2021).
-% https://doi.org/10.1121/10.0003802
+% Version 1.0: (03/29/2021)
+% written by Yongsung Park
 
-% Created by Yongsung Park, SIO UCSD
-% yongsungpark@ucsd.edu
-% Last updated 2021-03-29
+% Yongsung Park, Florian Meyer, & Peter Gerstoft
+% MPL/SIO/UCSD
+% yongsungpark@ucsd.edu / flmeyer@ucsd.edu / gerstoft@ucsd.edu
+% noiselab.ucsd.edu
+
+% Citation
+% Y. Park, F. Meyer, and P. Gerstoft, “Sequential sparse Bayesian learning for time-varying direction of arrival,” J. Acoust. Soc. Am. 149(3) (2021).
+% https://doi.org/10.1121/10.0003802
+% Y. Park, F. Meyer, and P. Gerstoft, “Sequential sparse Bayesian learning for DOA,” in Proc. Asilomar Conf. Signals Syst. Comput. (2020).
+% https://doi.org/10.1109/IEEECONF51394.2020.9443444
 
 %%
 clear; clc;
