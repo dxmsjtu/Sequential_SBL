@@ -11,7 +11,7 @@ The codes provide:
 # Citation
 
 -**[Y. Park, F. Meyer, and P. Gerstoft, “Sequential sparse Bayesian learning for time-varying direction of arrival,” J. Acoust. Soc. Am. 149(3) (2021).](https://doi.org/10.1121/10.0003802)**  
--[F. Meyer, Y. Park, and P. Gerstoft, “Sequential sparse Bayesian learning for DOA,” in Proc. Asilomar Conf. Signals Syst. Comput. (2020).](https://doi.org/10.1109/IEEECONF51394.2020.9443444)  
+-[Y. Park, F. Meyer, and P. Gerstoft, “Sequential sparse Bayesian learning for DOA,” in Proc. Asilomar Conf. Signals Syst. Comput. (2020).](https://doi.org/10.1109/IEEECONF51394.2020.9443444)  
 
 [[pdf]](https://www.dropbox.com/sh/qgi9symf43rki41/AADSrGg567PS86_S4A7j6aWEa?dl=0)  
 
