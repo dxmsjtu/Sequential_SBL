@@ -1,38 +1,24 @@
 function [ gamma, report] = SBLseq_v3p12( A , Y, gammaIn, options )
-%
 % function [ gamma , report ] = SBL_v3p1( A , Y, options )
-% The idea behind SBL is to find a diagonal replica 'covariance' Gamma.
-% Minimizing (YY^T / AGA^T + penality) should lead to the correct
+% The idea behind SBL is to find a diagonal replica 'covariance' Gamma. Minimizing (YY^T / AGA^T + penality) should lead to the correct
 % replica selection (up to a bogus scale factor/amplitude).
-%
-% Attention: If Y is single snapshot (and single frequency), it needs to be
-% a row vector (the code makes a 2nd snapshot with repmat).
-%
-% Inputs
-%
+% Attention: If Y is single snapshot (and single frequency), it needs to be a row vector (the code makes a 2nd snapshot with repmat).
+%% Inputs
 % A - Multiple frequency augmented dictionary <f , n , m>
 %     f: number of frequencies
 %     n: number of sensors
 %     m: number of replicas
 %   Note: if f==1, A = < n , m >
-%
-%
-% Y - Multiple snapshot multiple frequency observations <f , n , L>
+%% Y - Multiple snapshot multiple frequency observations <f , n , L>
 %     f: number of frequencies
 %     n: number of sensors
 %     L: number of snapshots
 %   Note: if f==1, Y = < n , L >
-%
 % options - see SBLset.m 
-%
-%
 % Outputs
-%
 % gamma <m , 1> - vector containing source power
 %                 1: surfaces found by minimum error norm
-%
 % report - various report options
-%
 %--------------------------------------------------------------------------
 % Version 1.0:
 % Code originally written by P. Gerstoft.
@@ -45,53 +31,38 @@ function [ gamma, report] = SBLseq_v3p12( A , Y, gammaIn, options )
 % A and Y have now one more dimensions
 % Posterior unbiased mean
 % Handles single snapshot
-%
 % Version 3.12
 % more efficient diagonal gamma computations
-%
 %
 % Kay L Gemba & Santosh Nannuru
 % MPL/SIO/UCSD gemba@ucsd.edu & snannuru@ucsd.edu
 
 %% check function
-
 if ismatrix(A) % SBL needs frequency dimension
     B(1,:,:) = A;
     A        = B;
 end
-
 % number of frequencies
 Nfreq     = size(A,1);
-
 % single frequency single snapshot
 if ismatrix(Y)
     % either 1 freq or 1 snapshot
-    if  Nfreq == 1
-        
+    if  Nfreq == 1        
         if size(Y,2) == 1 % single snapshot
             Y=Y.'; %squeeze2
         else
             Y = permute(Y,[ 3 1 2 ]); % works
-        end
-        
-    end
-    
+        end        
+    end    
 end
-
 %%
-
 options.SBL_v = '3.12';
-
 %% slicing
-
 Nsource = options.Nsource;
-
 if options.tic == 1
-    tic
+    %tic
 end
-
 %% Initialize variables
-
 % number of sensors
 Nsensor   = size(A,2);
 % number of dictionary entries
@@ -118,7 +89,6 @@ SCM = zeros( Nfreq , Nsensor , Nsensor );
 for i_f = 1 : Nfreq
     SCM(i_f,:,:) = squeeze2(Y(i_f,:,:)) * squeeze2(Y(i_f,:,:))' / Nsnapshot;
 end
-
 %% Initialize for Sequential processing change by YP
 % Simple source motion model (Random walk model with finite lags alphalag)
 alphalags = 2;  % cover [-alphalag , +alphalag] grid bin walk
@@ -129,7 +99,6 @@ alphalags = 2;  % cover [-alphalag , +alphalag] grid bin walk
 alphalength = 2*alphalags+1; alphatmp = ones(1,alphalength);  %uniform
 % alphalength = 2*alphalags+1; alphatmp = rand(1,alphalength);  %random
 % alphatmp = normpdf(-alphalags:alphalags,0,1);                 %gaussian, here with variance 1
-
 alpha = alphatmp / sum(alphatmp);
 
 Ftmp = zeros(Ntheta,1); Ftmp(1:alphalags+1) = alpha(alphalags+1:2*alphalags+1);
@@ -141,60 +110,39 @@ F = toeplitz(Ftmp);
 gammaIn = diag(F * diag(gammaIn) * F.');
 
 gamma        = 1*ones(Ntheta,1) * max(gammaIn)/1000;
-
 % Af = squeeze(A(:,:,iF));
 rho = 1.0;
-
 gamma = rho*rho*gammaIn + gamma;
 
 %% Main Loop
+%display(['Sequential SBL version ', options.SBL_v ,' initialized.']);
 
-display(['Sequential SBL version ', options.SBL_v ,' initialized.']);
-
-for j1 = 1 : options.convergence.maxiter
-    
+for j1 = 1 : options.convergence.maxiter    
     % for error analysis
-    gammaOld = gamma;
-    
-    %% gamma update
-    
-    for i_f = 1 : Nfreq
-        
-        Af = squeeze(A(i_f,:,:));
-        
-        ApSigmaYinv  = Af' / (sigc(i_f) * eye(Nsensor) + Af * (repmat(gamma, [1 Nsensor] ) .* Af'));
-        
+    gammaOld = gamma;    
+    %% gamma update    
+    for i_f = 1 : Nfreq        
+        Af = squeeze(A(i_f,:,:));        
+        ApSigmaYinv  = Af' / (sigc(i_f) * eye(Nsensor) + Af * (repmat(gamma, [1 Nsensor] ) .* Af'));        
         % Sum over snapshots and normalize, abs for roundoff errors
-        gamma_num(i_f,:)   = sum ( abs ( ( ApSigmaYinv * squeeze2(Y(i_f,:,:)) ).^2 ),2 ) / Nsnapshot;
-        
+        gamma_num(i_f,:)   = sum ( abs ( ( ApSigmaYinv * squeeze2(Y(i_f,:,:)) ).^2 ),2 ) / Nsnapshot;        
         % positive def quantity, abs for roundoff errors
         gamma_denum(i_f,:) = abs( sum  ( ApSigmaYinv.' .* Af, 1 ) );
-
-    end
-    
+    end    
     % Fixed point Eq. update
-    gamma = gamma  .* ((sum( gamma_num   ,1 ) ./...
-        sum( gamma_denum ,1 ) ).^(1/options.fixedpoint) ).' ;
-    
-    %% sigma and L2 error using unbiased posterior update 
-    
+    gamma = gamma  .* ((sum( gamma_num   ,1 ) ./sum( gamma_denum ,1 ) ).^(1/options.fixedpoint) ).' ;    
+    %% sigma and L2 error using unbiased posterior update     
     % locate same peaks for all frequencies
     [ ~ , Ilocs] = findpeaks(gamma,'SORTSTR','descend','NPEAKS',Nsource);
-    Apeak      = A(:,:,Ilocs);
-    
-    for i_f = 1 : Nfreq
-        
+    Apeak      = A(:,:,Ilocs);    
+    for i_f = 1 : Nfreq        
         % only active replicas
-        Am     = squeeze2(Apeak(i_f,:,:));
-   
+        Am     = squeeze2(Apeak(i_f,:,:));   
         % noise estimate
         sigc(i_f) = real(trace( (eye(Nsensor)-Am*pinv(Am)) * squeeze(SCM(i_f,:,:)) ) / ( Nsensor- Nsource ) );
-
-    end
-    
+    end    
     %% Convergance
-    % checks convergance and displays status reports
-    
+    % checks convergance and displays status reports    
     % convergance indicator
     errornorm(j1) = norm ( gamma - gammaOld, 1 ) / norm ( gamma, 1 );
     
@@ -215,26 +163,18 @@ for j1 = 1 : options.convergence.maxiter
         
         % not convereged
     elseif j1 == options.convergence.maxiter
-        warning(['Solution not converged. Error: ',num2str(sprintf('%1.2e' , errornorm(j1) )),'.'])
-        
+        warning(['Solution not converged. Error: ',num2str(sprintf('%1.2e' , errornorm(j1) )),'.'])        
         % status report
     elseif j1 ~= options.convergence.maxiter  && options.flag == 1 && mod(j1,options.status_report) == 0 % Iteration reporting
-        display(['Iteration: ',num2str(sprintf('%.4u',j1)),'. Error: ',num2str(sprintf('%1.2e' , errornorm(j1) )),'.' ])
-        
-    end
-    
+        display(['Iteration: ',num2str(sprintf('%.4u',j1)),'. Error: ',num2str(sprintf('%1.2e' , errornorm(j1) )),'.' ])        
+    end    
 end
-
 %% Posterior distribution
 % x_post - posterior unbiased mean
-for i_f = 1 : Nfreq
-    
-    Af = squeeze(A(i_f,:,:));
-    
-    x_post(i_f,:,:) = repmat(gamma, [1 Nsnapshot] ) .*...
-        (Af' / (sigc(i_f) * eye(Nsensor) +...
-         Af * (repmat(gamma, [1 Nsensor] ) .* Af')) * squeeze2(Y(i_f,:,:)));
-    
+for i_f = 1 : Nfreq    
+    Af = squeeze(A(i_f,:,:));    
+    % c.f. (31) of [2]
+    x_post(i_f,:,:) = repmat(gamma, [1 Nsnapshot] ) .* (Af' / (sigc(i_f) * eye(Nsensor) + Af * (repmat(gamma, [1 Nsensor] ) .* Af')) * squeeze2(Y(i_f,:,:)));    
 end
 
 %% function return

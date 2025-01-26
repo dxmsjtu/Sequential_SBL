@@ -29,7 +29,7 @@ SNRlist = [20];
 for nSNR = 1:length(SNRlist)
 Nsim = 1;
 for nsim=1:Nsim
-Nrng=0; rng(Nrng+nsim)
+Nrng=0;rng('default');% rng(Nrng+nsim)
 % rng(nsim)
 disp(['SNR',num2str(SNRlist(nSNR)),'_',num2str(nsim)])
 % Environment parameters
